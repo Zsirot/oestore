@@ -200,7 +200,10 @@ router.post(
       });
       customer.order_id = order._id;
 
-      res.redirect(303, session.url);
+      // Add a 3-second delay before redirecting to the Stripe session URL
+      setTimeout(() => {
+        res.redirect(303, session.url);
+      }, 3000);
     } catch (e) {
       req.flash("error", "Confirmation expired, returning to checkout");
       res.redirect("/store/checkout");
@@ -221,10 +224,11 @@ router.get(
         return res.redirect("/store");
       }
       const order = await Order.findById(req.session.customer.order_id); //find order in db
+      console.log("Order in /receipt route:", order);
       if (order && order.fulfilled === true) {
         const { customer, items } = order;
         const prices = customer.prices;
-        res.render("receipt", { customer, items, prices });
+        res.render("receipt", { customer, items, prices, order });
         req.session.destroy();
       } else {
         req.flash(

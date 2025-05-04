@@ -1,0 +1,149 @@
+@font-face {
+   font-family: barnstormer;
+   src: url(/fonts/Barnstormer.ttf);
+}
+
+@font-face {
+   font-family: Universe;
+   src: url(/fonts/Universe.ttf);
+}
+
+body {
+   font-family: 'Unica One', cursive;
+   text-transform: uppercase;
+   background-image: linear-gradient(to bottom, rgb(0, 0, 0) 60px, rgb(168, 168, 168) 120px, rgb(243, 254, 89));
+   overflow-x: hidden;
+}
+
+.image-overlay {
+   position: absolute;
+   background: rgba(0, 0, 0, 0);
+   width: 100%;
+   height: 100%;
+   justify-content: center;
+   align-items: center;
+   display: flex;
+   transition: all 0.5s ease;
+}
+
+.banner {
+   width: 100vw;
+   height: 40vh;
+   color: white;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+.banner-text {
+   font-family: barnstormer;
+   color: rgb(255, 249, 195);
+   font-size: 10vw;
+   z-index: 3;
+}
+
+@media(max-width: 1205px) {
+   .banner-text {
+      font-size: 14vw;
+   }
+}
+
+/* Home Page links */
+h1 a {
+    font-family: Universe;
+    font-size: 6rem;
+    z-index: 3;
+    cursor: pointer;
+    text-decoration: none;
+    color: rgb(251, 243, 174);
+    transition: all 0.3s ease;
+}
+
+h1 a:hover {
+    color: rgb(178, 0, 0);
+}
+
+/* Overlay */
+.background-pic {
+    position: relative;
+    background: url('/images/bandpic3.jpg') no-repeat fixed;
+    background-position: center top;
+    background-size: cover;
+    min-height: 10vh;
+}
+
+.image-overlay.animate {
+    background: rgb(7, 53, 7, 0.56)
+}
+
+/* Home page links */
+.cube1 {
+    height: 200px;
+    border-radius: 6%;
+    opacity: 0.9;
+}
+
+.cube2 {
+    height: 200px;
+    border-radius: 6%;
+    opacity: 0.9;
+}
+
+.cube3 {
+    height: 200px;
+    border-radius: 6%;
+    opacity: 0.9;
+}
+
+.cube4 {
+    height: 200px;
+    border-radius: 6%;
+    opacity: 0.9;
+}
+
+
+.photo-text {
+    color: white;
+}
+
+/* Unused for now, for eventual Biography */
+.spacer {
+    width: 100vw;
+    height: 60vh;
+}
+
+@media(max-width: 1205px) {
+    .spacer {
+        height: 75vh;
+    }
+}
+
+@media(max-width: 992px) {
+    .spacer {
+        height: 0vh;
+    }
+}
+
+.home-icons li {
+    list-style-type: none;
+}
+
+.home-icons>li>a {
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.home-icons>li>a:hover {
+    transform: scale(1.1);
+}
+
+.home-icons>li>a:active {
+    transform: scale(1.2);
+}
+
+.spacelay {
+   position: fixed;
+   width: 100vw;
+   height: 100vh;
+   background-image: url('/images/space.avif');
+   opacity: 0.2;
+}

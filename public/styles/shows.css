@@ -1,0 +1,38 @@
+.navbar.animate.bg-transparent {
+  background-color: rgba(127, 255, 212, 0.801) !important;
+}
+
+.background-pic {
+  position: relative;
+  background: url('/images/venue.jfif') no-repeat fixed;
+  background-position: center bottom;
+  background-size: cover;
+  width: 100vw;
+  min-height: 10vh;
+}
+
+.image-overlay.animate {
+  background-color: rgba(129, 36, 45, 0.7)
+}
+.background-pic iframe {
+  z-index: 100
+}
+
+.instagram-embed-frame {
+    z-index: 100;
+    width: 90vw;
+    max-width: 900px;
+    min-width: 320px;
+    height: 600px;
+    display: block;
+    margin: 0 auto;
+    border: none;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+
+.instagram-embed {
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

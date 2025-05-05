@@ -46,6 +46,7 @@
                     <div class="row">
                         <div class="col-3">
                             <label for="country">Country</label>
+                            <!-- The country select must always have name="country" so the backend receives the country code -->
                             <select class="form-control" id="country" name="country" aria-describedby="country"
                                 required>
                                 <option value="USA">USA</option>
@@ -116,11 +117,10 @@
                             <div class="valid-feedback">Looks Good!</div>
                         </div>
                         <div class="col-3">
-                            <label for="zip"></label>
-                            <input type="number" class="form-control" id="zip" placeholder="Zip Code" name="zip"
+                            <label for="zip">Postal Code</label>
+                            <input type="text" class="form-control" id="zip" placeholder="Postal Code" name="zip"
                                 aria-describedby="zip-code" required>
                             <div class="valid-feedback">Looks Good!</div>
-                            </input>
                         </div>
                     </div>
 
@@ -264,5 +264,73 @@
                 });
             }, false);
         })();
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const countrySelect = document.getElementById('country');
+            const stateSelect = document.getElementById('state');
+
+            // Fetch countries from backend proxy route
+            fetch('/store/checkout/printful-countries')
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.result) {
+                        countrySelect.innerHTML = '';
+                        data.result.forEach(country => {
+                            const option = document.createElement('option');
+                            option.value = country.code;
+                            option.textContent = country.name;
+                            countrySelect.appendChild(option);
+                        });
+                        // Trigger change event to load states for the first country
+                        countrySelect.dispatchEvent(new Event('change'));
+                    }
+                });
+
+            countrySelect.addEventListener('change', function () {
+                const countryCode = this.value;
+                console.log('Fetching states for country:', countryCode);
+
+                // Fetch states for the selected country from backend proxy
+                fetch(`/store/checkout/printful-states/${countryCode}`)
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! status: ${res.status}`);
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        console.log('Received states data:', data);
+                        if (data && data.result && data.result.states && data.result.states.length > 0) {
+                            stateSelect.innerHTML = '';
+                            data.result.states.forEach(state => {
+                                const option = document.createElement('option');
+                                option.value = state.code;
+                                option.textContent = state.name;
+                                stateSelect.appendChild(option);
+                            });
+                            stateSelect.disabled = false;
+                            stateSelect.required = true;
+                            stateSelect.name = "state";
+                            stateSelect.parentElement.style.display = 'block';
+                        } else {
+                            console.log('No states available for country:', countryCode);
+                            stateSelect.innerHTML = '<option value="">Not required</option>';
+                            stateSelect.disabled = true;
+                            stateSelect.required = false;
+                            stateSelect.removeAttribute("name");
+                            stateSelect.parentElement.style.display = 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching states:', error);
+                        stateSelect.innerHTML = '<option value="">Not required</option>';
+                        stateSelect.disabled = true;
+                        stateSelect.required = false;
+                        stateSelect.removeAttribute("name");
+                        stateSelect.parentElement.style.display = 'none';
+                    });
+            });
+        });
     </script>
     <script src="/scripts/checkout.js"></script>

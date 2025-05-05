@@ -28,18 +28,22 @@ const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 const calcShipping = async (customer, items) => {
   try {
+    // Build recipient object dynamically
+    const recipient = {
+      name: [customer.first_name, customer.last_name].join(" "),
+      address1: customer.address_1,
+      address2: customer.address_2,
+      city: customer.city,
+      country_code: customer.country,
+      zip: customer.zip,
+    };
+    if (customer.state) {
+      recipient.state_code = customer.state;
+    }
     const response = await axios.post(
       "https://api.printful.com/orders/estimate-costs",
       {
-        recipient: {
-          name: [customer.first_name, customer.last_name].join(" "),
-          address1: customer.address_1,
-          address2: customer.address_2,
-          city: customer.city,
-          state_code: customer.state,
-          country_code: "US",
-          zip: customer.zip,
-        },
+        recipient,
         items,
       },
       {
@@ -115,6 +119,11 @@ router.post(
   verifyCheckout,
   catchAsync(async (req, res) => {
     try {
+      console.log("Checkout POST body:", req.body); // Debug log
+      if (!req.body.country) {
+        req.flash("error", "Country is required. Please select a country.");
+        return res.redirect("/store/checkout");
+      }
       const { data, items, totals } = req.session.cart;
       cart = new Cart(data, items, totals);
       req.session.customer = req.body;
@@ -180,6 +189,50 @@ router.post(
         quantity: 1,
       });
 
+      // --- Extra validation: require state if country has states ---
+      const countriesRes = await axios.get(
+        "https://api.printful.com/countries",
+        {
+          headers: { Authorization: `Bearer ${process.env.API_KEY}` },
+        }
+      );
+      const countries = countriesRes.data.result;
+      const selectedCountry = countries.find(
+        (c) => c.code.toLowerCase() === customer.country.toLowerCase()
+      );
+      if (
+        selectedCountry &&
+        selectedCountry.states &&
+        selectedCountry.states.length > 0
+      ) {
+        if (!customer.state) {
+          req.flash(
+            "error",
+            "State/Province is required for the selected country."
+          );
+          return res.redirect("/store/checkout");
+        }
+      }
+      // --- End extra validation ---
+
+      // Build recipient object dynamically
+      console.log(
+        "Session customer before order creation:",
+        req.session.customer
+      );
+      const recipient = {
+        name: [customer.first_name, customer.last_name].join(" "),
+        address1: customer.address_1,
+        address2: customer.address_2,
+        city: customer.city,
+        country_code: customer.country,
+        zip: customer.zip,
+        email: customer.email,
+      };
+      if (customer.state) {
+        recipient.state_code = customer.state;
+      }
+
       const order = new Order({
         items,
         customer,
@@ -242,5 +295,88 @@ router.get(
     }
   })
 );
+
+// Proxy route for Printful countries API
+router.get("/printful-countries", async (req, res) => {
+  try {
+    const response = await axios.get("https://api.printful.com/countries", {
+      headers: { Authorization: `Bearer ${process.env.API_KEY}` },
+    });
+
+    // Get the countries array
+    const countries = response.data.result;
+
+    // Sort countries alphabetically, but put US first
+    const sortedCountries = countries.sort((a, b) => {
+      if (a.code === "US") return -1;
+      if (b.code === "US") return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    res.json({
+      result: sortedCountries,
+    });
+  } catch (error) {
+    console.error("Error fetching countries:", error.message);
+    res.status(500).json({ error: "Failed to fetch countries" });
+  }
+});
+
+// Proxy route for Printful states API
+router.get("/printful-states/:countryCode", async (req, res) => {
+  try {
+    const { countryCode } = req.params;
+    console.log("Fetching states for:", countryCode);
+
+    // First get all countries
+    const response = await axios({
+      method: "get",
+      url: "https://api.printful.com/countries",
+      headers: {
+        Authorization: `Bearer ${process.env.API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Find the specific country in the response
+    const countries = response.data.result;
+    const country = countries.find(
+      (c) => c.code.toLowerCase() === countryCode.toLowerCase()
+    );
+
+    console.log("Found country:", country);
+
+    // Check if the country has states in the correct structure
+    if (country && country.states && Array.isArray(country.states)) {
+      // Country has states
+      res.json({
+        result: {
+          states: country.states,
+        },
+      });
+    } else {
+      // Country doesn't have states or states is not in the expected format
+      console.log("No states found for country:", countryCode);
+      res.json({
+        result: {
+          states: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Error details:", {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+    });
+
+    res.status(500).json({
+      error: "Failed to fetch states",
+      details: error.response?.data || error.message,
+      status: error.response?.status,
+    });
+  }
+});
 
 module.exports = router;

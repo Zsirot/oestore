@@ -55,20 +55,34 @@ const fulfillOrder = async function (stripeOrderId) {
         currency: "USD",
       });
     }
+    // Build recipient object dynamically
+    const recipient = {
+      name: [customer.first_name, customer.last_name].join(" "),
+      address1: customer.address_1,
+      address2: customer.address_2,
+      city: customer.city,
+      country_code: customer.country, // Use dynamic country code
+      zip: customer.zip,
+      email: customer.email,
+    };
+    if (!customer.country) {
+      console.error(
+        "ERROR: country_code is missing from customer data!",
+        customer
+      );
+      throw new AppError(
+        "Order fulfillment failed: country_code is missing from customer data.",
+        400
+      );
+    }
+    if (customer.state) {
+      recipient.state_code = customer.state;
+    }
+    console.log("Printful recipient payload:", recipient);
     const response = await axios.post(
       "https://api.printful.com/orders",
       {
-        //Sends order to printful using customer/item data from the DB
-        recipient: {
-          name: [customer.first_name, customer.last_name].join(" "),
-          address1: customer.address_1,
-          address2: customer.address_2,
-          city: customer.city,
-          state_code: customer.state,
-          country_code: "US",
-          zip: customer.zip,
-          email: customer.email,
-        },
+        recipient,
         items: cartItems,
       },
       printfulConfig

@@ -15,3 +15,8 @@
 .sticky-top {
     position: static;
  }
+
+ body {
+    font-family: 'Righteous', cursive;
+    text-transform:none;
+ }

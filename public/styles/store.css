@@ -1,9 +1,7 @@
 .modal-body, .modal-header {
    background-color: rgb(33, 37, 41);
 }
-.navbar.animate.bg-transparent{
-   background-color: rgba(127, 255, 212, 0.801) !important;
-}
+
 .storeImg {
     width: 45%;
     height: 45%;

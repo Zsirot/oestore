@@ -195,7 +195,7 @@ router.post(
         },
         payment_method_types: ["card"],
         mode: "payment",
-        success_url: `${url}/store/checkout/receipt`,
+        success_url: `${url}/store/checkout/receipt?order_id=${order._id}`,
         cancel_url: `${url}/store/checkout`,
       });
       customer.order_id = order._id;
@@ -215,25 +215,21 @@ router.get(
   "/receipt",
   catchAsync(async (req, res) => {
     try {
-      console.log("Session customer:", req.session.customer);
-      if (!req.session.customer || !req.session.customer.order_id) {
-        req.flash(
-          "error",
-          "Order confirmation expired or session missing. Please check your email for a receipt or contact support."
-        );
-        return res.redirect("/store");
-      }
-      const order = await Order.findById(req.session.customer.order_id); //find order in db
+      const orderId = req.query.order_id;
+      const order = await Order.findById(orderId); //find order in db
       console.log("Order in /receipt route:", order);
-      if (order && order.fulfilled === true) {
+      if (order) {
         const { customer, items } = order;
         const prices = customer.prices;
         res.render("receipt", { customer, items, prices, order });
-        req.session.destroy();
+        if (order.fulfilled === true) {
+          req.session.cart = null;
+          req.session.save(); // Ensure session is saved after clearing cart
+        }
       } else {
         req.flash(
           "error",
-          "Order not fulfilled yet or not found. Please check your email for a receipt or contact support."
+          "Order not found. Please check your email for a receipt or contact support."
         );
         res.redirect("/store");
       }

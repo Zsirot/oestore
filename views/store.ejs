@@ -17,7 +17,7 @@
         <div class="container w-100 d-flex flex-wrap justify-content-center">
             <% for (let [i, product] of allItems.entries()) { %>
                 <div class="card bg-dark m-5" data-bs-toggle="modal" data-bs-target="#Modal<%=i%>" role="button">
-                    <img src="<%=product.thumbnail_url%>" class="card-img-top" alt="image <%=product.name%>">
+                    <img src="<%=product.variants[0].variant_img%>" class="card-img-top" alt="image <%=product.name%>">
                     <div class="card-body bg-dark shadow-lg d-flex align-items-center justify-content-center">
                         <p class="text-light text-center my-1">
                             <%=product.name%>
@@ -47,112 +47,132 @@
                                                 method="POST">
                                                 <div class="row d-flex justify-content-center">
                                                     <img class="col-6 storeImg w-33 p-3"
-                                                        src="<%=product.thumbnail_url%>" alt="image <%=product.name%>">
+                                                        src="<%=product.variants[0].variant_img%>"
+                                                        alt="image <%=product.name%>">
                                                     <div class="col-6 d-flex flex-column justify-content-center">
                                                         <input id="prodId" name="prodId" type="hidden"
                                                             value="<%=product.product_id%>">
                                                         <input id="imgUrl" name="imgUrl" type="hidden"
-                                                            value="<%=product.thumbnail_url%>">
+                                                            value="<%=product.variants[0].variant_img%>">
                                                         <input id="title" name="title" type="hidden"
                                                             value="<%=product.name%>">
-                                                        <% if (product.variants && product.variants.length> 0) { %>
-                                                            <% if (product.variants.some(v=> v.color && v.color.trim()
-                                                                !== "")) { %>
-                                                                <div class="d-flex flex-row align-items-center">
-                                                                    <span
-                                                                        class="col-6 d-flex justify-content-center">Color</span>
-                                                                    <div class="col-6">
-                                                                        <select class="form-select my-3"
-                                                                            aria-label="color-select" name="color">
-                                                                            <% let uniqueColors=[...new
-                                                                                Set(product.variants.filter(v=> v.color
-                                                                                && v.color.trim() !== "").map(v =>
-                                                                                v.color))];
-                                                                                uniqueColors.forEach(color => { %>
-                                                                                <option value="<%= color %>">
-                                                                                    <%= color %>
-                                                                                </option>
-                                                                                <% }); %>
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                                <% } %>
-                                                                    <% if (product.variants.some(v=> v.size &&
-                                                                        v.size.trim() !== "")) { %>
-                                                                        <div class="d-flex flex-row align-items-center">
-                                                                            <span
-                                                                                class="col-6 d-flex justify-content-center">Size</span>
-                                                                            <div class="col-6">
-                                                                                <select class="form-select my-3"
-                                                                                    aria-label="size select"
-                                                                                    name="size">
-                                                                                    <% let uniqueSizes=[...new
-                                                                                        Set(product.variants.filter(v=>
-                                                                                        v.size && v.size.trim() !==
-                                                                                        "").map(v => v.size))];
-                                                                                        uniqueSizes.forEach(size => { %>
-                                                                                        <option value="<%= size %>">
-                                                                                            <%= size %>
-                                                                                        </option>
-                                                                                        <% }); %>
-                                                                                </select>
-                                                                            </div>
+                                                        <% let colorImages=[]; %>
+                                                            <% let uniqueColors=[]; %>
+                                                                <% product.variants.filter(v=> v.color && v.color.trim()
+                                                                    !== "").forEach(v => {
+                                                                    if (!uniqueColors.includes(v.color)) {
+                                                                    uniqueColors.push(v.color);
+                                                                    colorImages.push({ color: v.color, variant_img:
+                                                                    v.variant_img });
+                                                                    }
+                                                                    }); %>
+
+                                                                    <div class="d-flex flex-row align-items-center">
+
+                                                                        <span
+                                                                            class="col-6 d-flex justify-content-center">Color</span>
+                                                                        <div class="col-6">
+                                                                            <select class="form-select my-3"
+                                                                                aria-label="color-select" name="color"
+                                                                                data-color-images='<%= JSON.stringify(colorImages) %>'>
+                                                                                <% uniqueColors.forEach(color=> { %>
+                                                                                    <option value="<%= color %>">
+                                                                                        <%= color %>
+                                                                                    </option>
+                                                                                    <% }); %>
+                                                                            </select>
                                                                         </div>
-                                                                        <% } %>
-                                                                            <% } %>
-                                                                                <div
-                                                                                    class="d-flex flex-row align-items-center">
-                                                                                    <label for="qty"
-                                                                                        class="col-6 d-flex justify-content-center">Quantity</label>
-                                                                                    <div class="col-6">
-                                                                                        <select class="form-select my-3"
-                                                                                            name="qty" id="qty"
-                                                                                            aria-label="quantity select">
-                                                                                            <option selected value="1">1
+                                                                    </div>
+                                                                    <% if (product.variants && product.variants.length>
+                                                                        0) { %>
+                                                                        <% if (product.variants.some(v=> v.size &&
+                                                                            v.size.trim() !== "")) { %>
+                                                                            <div
+                                                                                class="d-flex flex-row align-items-center">
+                                                                                <span
+                                                                                    class="col-6 d-flex justify-content-center">Size</span>
+                                                                                <div class="col-6">
+                                                                                    <select class="form-select my-3"
+                                                                                        aria-label="size select"
+                                                                                        name="size">
+                                                                                        <% let uniqueSizes=[...new
+                                                                                            Set(product.variants.filter(v=>
+                                                                                            v.size && v.size.trim() !==
+                                                                                            "").map(v => v.size))];
+                                                                                            uniqueSizes.forEach(size =>
+                                                                                            { %>
+                                                                                            <option value="<%= size %>">
+                                                                                                <%= size %>
                                                                                             </option>
-                                                                                            <option value="2">2</option>
-                                                                                            <option value="3">3</option>
-                                                                                            <option value="4">4</option>
-                                                                                            <option value="5">5</option>
-                                                                                            <option value="6">6</option>
-                                                                                            <option value="7">7</option>
-                                                                                            <option value="8">8</option>
-                                                                                            <option value="9">9</option>
-                                                                                            <option value="10">10
-                                                                                            </option>
-                                                                                            <option value="11">11
-                                                                                            </option>
-                                                                                            <option value="12">12
-                                                                                            </option>
-                                                                                            <option value="13">13
-                                                                                            </option>
-                                                                                            <option value="14">14
-                                                                                            </option>
-                                                                                            <option value="15">15
-                                                                                            </option>
-                                                                                            <option value="16">16
-                                                                                            </option>
-                                                                                            <option value="17">17
-                                                                                            </option>
-                                                                                            <option value="18">18
-                                                                                            </option>
-                                                                                            <option value="19">19
-                                                                                            </option>
-                                                                                            <option value="20">20
-                                                                                            </option>
-                                                                                            <option value="21">21
-                                                                                            </option>
-                                                                                            <option value="22">22
-                                                                                            </option>
-                                                                                            <option value="23">23
-                                                                                            </option>
-                                                                                            <option value="24">24
-                                                                                            </option>
-                                                                                            <option value="25">25
-                                                                                            </option>
-                                                                                        </select>
-                                                                                    </div>
+                                                                                            <% }); %>
+                                                                                    </select>
                                                                                 </div>
+                                                                            </div>
+                                                                            <% } %>
+                                                                                <% } %>
+                                                                                    <div
+                                                                                        class="d-flex flex-row align-items-center">
+                                                                                        <label for="qty"
+                                                                                            class="col-6 d-flex justify-content-center">Quantity</label>
+                                                                                        <div class="col-6">
+                                                                                            <select
+                                                                                                class="form-select my-3"
+                                                                                                name="qty" id="qty"
+                                                                                                aria-label="quantity select">
+                                                                                                <option selected
+                                                                                                    value="1">1
+                                                                                                </option>
+                                                                                                <option value="2">2
+                                                                                                </option>
+                                                                                                <option value="3">3
+                                                                                                </option>
+                                                                                                <option value="4">4
+                                                                                                </option>
+                                                                                                <option value="5">5
+                                                                                                </option>
+                                                                                                <option value="6">6
+                                                                                                </option>
+                                                                                                <option value="7">7
+                                                                                                </option>
+                                                                                                <option value="8">8
+                                                                                                </option>
+                                                                                                <option value="9">9
+                                                                                                </option>
+                                                                                                <option value="10">10
+                                                                                                </option>
+                                                                                                <option value="11">11
+                                                                                                </option>
+                                                                                                <option value="12">12
+                                                                                                </option>
+                                                                                                <option value="13">13
+                                                                                                </option>
+                                                                                                <option value="14">14
+                                                                                                </option>
+                                                                                                <option value="15">15
+                                                                                                </option>
+                                                                                                <option value="16">16
+                                                                                                </option>
+                                                                                                <option value="17">17
+                                                                                                </option>
+                                                                                                <option value="18">18
+                                                                                                </option>
+                                                                                                <option value="19">19
+                                                                                                </option>
+                                                                                                <option value="20">20
+                                                                                                </option>
+                                                                                                <option value="21">21
+                                                                                                </option>
+                                                                                                <option value="22">22
+                                                                                                </option>
+                                                                                                <option value="23">23
+                                                                                                </option>
+                                                                                                <option value="24">24
+                                                                                                </option>
+                                                                                                <option value="25">25
+                                                                                                </option>
+                                                                                            </select>
+                                                                                        </div>
+                                                                                    </div>
                                                     </div>
                                                     <div class="row">
                                                         <div>
@@ -201,6 +221,7 @@
                                     </div>
                                 </div>
 
+                                //
                                 <pre><%= JSON.stringify(product.variants, null, 2) %></pre>
 
                                 <div class="modal-footer d-flex justify-content-center">
@@ -341,3 +362,30 @@
     </div>
     <script src="/scripts/store.js"></script>
     <script src="/scripts/fixedNav.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('select[name="color"]').forEach(function (select) {
+                // Hide parent div and remove name attribute if no color images
+                if (select.getAttribute('data-color-images') === '[]') {
+                    const parentDiv = select.closest('.d-flex.flex-row.align-items-center');
+                    if (parentDiv) {
+                        parentDiv.style.setProperty('display', 'none', 'important');
+                    }
+                    select.removeAttribute('name'); // Prevents the color field from being submitted
+                }
+                select.addEventListener('change', function () {
+                    const selectedColor = this.value;
+                    const detailsContainer = this.closest('.details');
+                    const colorImages = JSON.parse(this.getAttribute('data-color-images'));
+                    const match = colorImages.find(ci => ci.color === selectedColor);
+                    if (match && detailsContainer) {
+                        const img = detailsContainer.querySelector('img.storeImg');
+                        if (img) {
+                            img.src = match.variant_img;
+                        }
+                    }
+                    console.log('color selected:', selectedColor);
+                });
+            });
+        });
+    </script>

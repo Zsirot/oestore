@@ -13,18 +13,23 @@ const findProduct = async function (prodId, color, size) {
       "variants"
     );
     let found;
-    if (product[0].variants[0].size) {
-      found = product[0].variants.find(function (vrnt) {
-        return vrnt.size === size && vrnt.color === color;
-      });
-    } else if (product[0].variants[0].color) {
-      found = product[0].variants.find(function (vrnt) {
-        return vrnt.color === color;
-      });
+    const hasColor = product[0].variants.some(
+      (v) => v.color && v.color.trim() !== ""
+    );
+    const hasSize = product[0].variants.some(
+      (v) => v.size && v.size.trim() !== ""
+    );
+
+    if (hasColor && hasSize) {
+      found = product[0].variants.find(
+        (vrnt) => vrnt.size === size && vrnt.color === color
+      );
+    } else if (hasColor) {
+      found = product[0].variants.find((vrnt) => vrnt.color === color);
+    } else if (hasSize) {
+      found = product[0].variants.find((vrnt) => vrnt.size === size);
     } else {
-      found = product[0].variants.find(function (vrnt) {
-        return vrnt.name === product[0].variants[0].name;
-      });
+      found = product[0].variants[0];
     }
     return found;
   } catch (e) {

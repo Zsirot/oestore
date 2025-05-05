@@ -27,9 +27,8 @@
    width: 100vw;
 }
 .image-overlay.animate {
-   background: rgb(247, 83, 84, 0.38)
-   /* background: linear-gradient(180deg, rgb(148 232 207), rgb(242 125 184 / 83%)); */
- }
+   background: rgb(7, 53, 7, 0.56)
+}
 
 .checkout-container{
    display: flex;

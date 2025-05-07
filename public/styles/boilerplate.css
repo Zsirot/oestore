@@ -25,6 +25,7 @@ body {
    height: 100vh;
    background-image: url('/images/space.avif');
    opacity: 0.2;
+   z-index: -1;
 }
 
 h1 {
@@ -63,6 +64,7 @@ footer {
 }
 
 .logo {
+   opacity: 70%;
    max-width: 70vw;
 }
 
@@ -127,6 +129,10 @@ footer {
 
    .logo {
       max-width: 95vw;
+   }
+
+   .cart-text a {
+      display: none;
    }
 }
 
@@ -293,6 +299,9 @@ footer {
 .fa-shopping-cart {
    color: whitesmoke;
    position: relative;
+}
+.card-footer {
+   color: black
 }
 
 .moonshines a {

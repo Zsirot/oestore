@@ -1,3 +1,6 @@
+// =======================
+// Imports and Setup
+// =======================
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
@@ -15,11 +18,17 @@ const storeRoutes = require("./routes/store");
 const checkoutRoutes = require("./routes/checkout");
 const webhookRoutes = require("./routes/webhooks");
 
+// =======================
+// Environment Variables
+// =======================
 if (process.env.NODE_ENV !== "production") {
-  //if we ar enot in production mode
-  require("dotenv").config(); //require our .env file,
+  // if we are not in production mode
+  require("dotenv").config(); // require our .env file
 }
 
+// =======================
+// Database Connection
+// =======================
 // mongoose.connect('mongodb://localhost:27017/neon-noir');
 mongoose.connect(process.env.DB_URL);
 
@@ -29,9 +38,15 @@ db.once("open", () => {
   console.log("Database Connected");
 });
 
+// =======================
+// Express App Initialization
+// =======================
 const app = express();
 app.enable("trust proxy");
 
+// =======================
+// Middleware Setup
+// =======================
 const unless = function (path, middleware) {
   // if any route does not match this path, run the middleware. If it does, don't run the middleware.
   return function (req, res, next) {
@@ -47,13 +62,16 @@ app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-app.use(unless("/webhooks/stripe", express.json())); //use json parsing for all routes except the stripe webhook
+app.use(unless("/webhooks/stripe", express.json())); // use json parsing for all routes except the stripe webhook
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 // app.use(morgan('tiny'))
 
 app.use(express.static(path.join(__dirname, "public")));
 
+// =======================
+// Session and Flash
+// =======================
 const store = MongoStore.create({
   mongoUrl: process.env.DB_URL,
   touchAfter: 24 * 60 * 60,
@@ -65,6 +83,7 @@ const store = MongoStore.create({
 store.on("error", function (e) {
   console.log("SESSION STORE ERROR", e);
 });
+
 const sessionConfig = {
   store,
   secret: process.env.SESSION_SECRET,
@@ -73,10 +92,10 @@ const sessionConfig = {
   unset: "destroy",
   name: "sessionId",
   cookie: {
-    //this is for the cookie our server sends to the browser
-    httpOnly: true, //looks like this is already default, but a good security feature
-    expires: Date.now() + 1000 * 60 * 60 * 24, //since expirations are in milliseconds, we add a day to the date
-    maxAge: 1000 * 60 * 60 * 24, //also a day
+    // this is for the cookie our server sends to the browser
+    httpOnly: true, // looks like this is already default, but a good security feature
+    expires: Date.now() + 1000 * 60 * 60 * 24, // since expirations are in milliseconds, we add a day to the date
+    maxAge: 1000 * 60 * 60 * 24, // also a day
   },
 };
 
@@ -84,6 +103,9 @@ app.use(session(sessionConfig));
 app.use(flash());
 app.use(helmet());
 
+// =======================
+// Content Security Policy (CSP)
+// =======================
 const scriptSrcUrls = [
   "https://stackpath.bootstrapcdn.com",
   "https://kit.fontawesome.com",
@@ -109,12 +131,11 @@ const childSrcUrls = [
   "https://widget-app.songkick.com",
   "https://www.instagram.com",
 ];
-
 const fontSrcUrls = [
   "https://fonts.gstatic.com",
   "https://cdnjs.cloudflare.com",
+  "data:",
 ];
-
 const imageSrcUrls = [
   "https://images.unsplash.com",
   "https://i.ytimg.com",
@@ -143,6 +164,9 @@ app.use(
   })
 );
 
+// =======================
+// Locals Middleware
+// =======================
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
@@ -150,6 +174,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// =======================
+// Route Setup
+// =======================
 app.use("/store", storeRoutes);
 app.use("/store/checkout", checkoutRoutes);
 app.use("/webhooks", webhookRoutes);
@@ -166,6 +193,9 @@ app.get("/music", (req, res) => {
   res.render("music");
 });
 
+// =======================
+// Error Handling
+// =======================
 app.all("*", (req, res, next) => {
   next(new AppError("Page Not Found", 404));
 });
@@ -177,6 +207,9 @@ app.use((err, req, res, next) => {
   // res.redirect(`${req.originalUrl}`) //save this for flash error redirection
 });
 
+// =======================
+// Server Start
+// =======================
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {

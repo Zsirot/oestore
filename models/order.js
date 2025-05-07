@@ -76,6 +76,11 @@ const orderSchema = new Schema({
         type: Number,
         required: true,
       },
+      vat: {
+        type: Number,
+        required: false,
+        default: 0,
+      },
       total: {
         type: Number,
         required: true,

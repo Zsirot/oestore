@@ -50,17 +50,18 @@ const calcShipping = async (customer, items) => {
         headers: { Authorization: `Bearer ${process.env.API_KEY}` },
       }
     );
-    const { subtotal, shipping, tax } = response.data.result.costs;
+    const { subtotal, shipping, tax, vat } = response.data.result.costs;
 
     const retailCost = response.data.result.retail_costs.subtotal;
     prices = {
       subtotal,
       shipping,
       tax,
-      total: parseFloat((retailCost + shipping).toFixed(2)),
+      vat: Number(vat) || 0,
+      total: parseFloat((retailCost + shipping + (tax || 0)).toFixed(2)),
       retailCost: retailCost.toFixed(2),
     };
-
+    console.log("calcShipping prices:", prices);
     return prices;
   } catch (e) {
     throw new AppError(e.response.data.result, 400);
@@ -126,8 +127,19 @@ router.post(
       }
       const { data, items, totals } = req.session.cart;
       cart = new Cart(data, items, totals);
-      req.session.customer = req.body;
-      const customer = req.session.customer;
+      // Sanitize and coerce customer fields before saving to session
+      const customer = {
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        email: req.body.email,
+        address_1: req.body.address_1,
+        address_2: req.body.address_2,
+        city: req.body.city,
+        state: req.body.state,
+        zip: req.body.zip ? parseInt(req.body.zip.trim(), 10) : undefined,
+        country: req.body.country,
+      };
+      req.session.customer = customer;
       let prices = {};
       let cartItems = [];
       for (item of cart.data.items) {
@@ -188,7 +200,19 @@ router.post(
         },
         quantity: 1,
       });
-
+      // Add tax as a line item if present and > 0
+      if (customer.prices.tax && customer.prices.tax > 0) {
+        line_items.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Tax",
+            },
+            unit_amount_decimal: currency(customer.prices.tax).intValue,
+          },
+          quantity: 1,
+        });
+      }
       // --- Extra validation: require state if country has states ---
       const countriesRes = await axios.get(
         "https://api.printful.com/countries",
@@ -252,6 +276,11 @@ router.post(
         cancel_url: `${url}/store/checkout`,
       });
       customer.order_id = order._id;
+
+      // Make sure customer.prices is up to date with all fields (including VAT)
+      customer.prices = prices;
+      req.session.customer = customer;
+      console.log("customer.prices before order creation:", customer.prices);
 
       // Add a 3-second delay before redirecting to the Stripe session URL
       setTimeout(() => {

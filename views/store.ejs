@@ -102,7 +102,11 @@
                                                                                             uniqueSizes.forEach(size =>
                                                                                             { %>
                                                                                             <option value="<%= size %>">
-                                                                                                <%= size %>
+                                                                                                <%= size %> ($<%=
+                                                                                                        product.variants.find(v=>
+                                                                                                        v.size ===
+                                                                                                        size)?.retail_price
+                                                                                                        || 'N/A' %>)
                                                                                             </option>
                                                                                             <% }); %>
                                                                                     </select>
@@ -221,7 +225,7 @@
                                     </div>
                                 </div>
 
-                                //
+
                                 <pre><%= JSON.stringify(product.variants, null, 2) %></pre>
 
                                 <div class="modal-footer d-flex justify-content-center">
@@ -351,6 +355,9 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="card-footer">
+                                Price per unit: $<%=item.price%>
+                            </div>
                         </div>
                         <% } %>
                             <% } %>
@@ -384,7 +391,7 @@
                             img.src = match.variant_img;
                         }
                     }
-                    console.log('color selected:', selectedColor);
+
                 });
             });
         });

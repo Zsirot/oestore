@@ -61,7 +61,8 @@
                             <% } %>
                                 <tr>
                                     <th scope="row">
-                                        <span>Subtotal</span>
+                                        <span>Subtotal<% if (prices.vat && Number(prices.vat)> 0) { %> (VAT incl.)<% }
+                                                    %></span>
                                     </th>
                                     <td>
                                     </td>
@@ -83,13 +84,25 @@
                                 </tr>
                                 <tr>
                                     <th scope="row">
+                                        <span>Tax</span>
+                                    </th>
+                                    <td>
+                                    </td>
+                                    <td>
+                                    </td>
+                                    <td>$<%=prices.tax%>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">
                                         <span>Total</span>
                                     </th>
                                     <td>
                                     </td>
                                     <td>
                                     </td>
-                                    <td>$<%=prices.total%>
+                                    <td>$<%= (parseFloat(prices.retailCost) + parseFloat(prices.shipping) +
+                                            parseFloat(prices.tax)).toFixed(2) %>
                                     </td>
                                 </tr>
                     </tbody>

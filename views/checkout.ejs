@@ -236,6 +236,9 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="card-footer">
+                                Price per unit: $<%=item.price%>
+                            </div>
                         </div>
                         <% } %>
                             <% } %>
@@ -289,7 +292,7 @@
 
             countrySelect.addEventListener('change', function () {
                 const countryCode = this.value;
-                console.log('Fetching states for country:', countryCode);
+                // console.log('Fetching states for country:', countryCode);
 
                 // Fetch states for the selected country from backend proxy
                 fetch(`/store/checkout/printful-states/${countryCode}`)

@@ -1,7 +1,6 @@
 .navbar.animate.bg-transparent {
-  background-color: rgba(127, 255, 212, 0.801) !important;
+  background-color: rgba(86, 83, 57, 0.801);
 }
-
 .background-pic {
   position: relative;
   background: url('/images/venue.jfif') no-repeat fixed;

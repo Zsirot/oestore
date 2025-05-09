@@ -43,11 +43,11 @@ const fulfillOrder = async function (stripeOrderId) {
     ); //stripeOrderId comes from a successfully completed payment
     const orderDoc = await Order.findById(completedOrder.metadata.orderId);
     if (!orderDoc) {
-      console.error(
+      console.warn(
         "Order not found in database for fulfillment:",
         completedOrder.metadata.orderId
       );
-      throw new AppError("Order not found in database for fulfillment", 400);
+      return; // Do not throw, just return early
     }
     const { customer, items } = orderDoc;
 

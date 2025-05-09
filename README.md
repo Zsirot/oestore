@@ -1,39 +1,140 @@
-# Only Echoes Band Website and Ecommerce Store
+# Only Echoes Band Website & Ecommerce Store
 
-This repository is deployed live at the following URL: https://oe-store-app-06f0d6d6c068.herokuapp.com/ 
+Live Demo: [https://oe-store-app-06f0d6d6c068.herokuapp.com/](https://oe-store-app-06f0d6d6c068.herokuapp.com/)
 
-It includes a fully functional ecommerce store with a custom Printful integration (a dropshipping, print-on-demand service)
+A full-stack ecommerce web application for the Only Echoes band, featuring a custom Printful (print-on-demand) integration and Stripe payments. The app supports dynamic product management, order fulfillment, and a modern shopping experience.
 
-Currently only set up in a a test environment. Credit card payments via stripe can be tested with the card number 4242 4242 4242 4242, other card fields can be anything
+---
+
+## Tech Stack
+
+- **Backend:** Node.js, Express.js, MongoDB (Mongoose)
+- **Frontend:** EJS, Bootstrap 5, Vanilla JS
+- **Payments:** Stripe
+- **Fulfillment:** Printful API
+- **Other:** dotenv, helmet, morgan, express-session, connect-mongo
+
+---
 
 ## Features
 
- -Store API integrations with Printful.com and Stripe
- 
- -Shopping cart overlay sidebar
- 
- -Automatic MongoDB database seeding from products built in seperately in the Printful store (a very user friendly product design application)
- 
- -Automatic store page population from seeded products
- 
- -Product seed refresh triggered by printful stock update webhook api
- 
- -order details and order submission processed only on successful stripe payment (via payment success stripe webhook)
- 
+- Seamless integration with Printful (product sync, stock updates, fulfillment)
+- Secure Stripe payment processing (test mode enabled)
+- Shopping cart overlay sidebar
+- Automatic MongoDB seeding from Printful store
+- Dynamic store page population
+- Product seed refresh via Printful webhook
+- Order processing only on successful Stripe payment (via webhook)
+- Country/state dropdowns powered by Printful API
+
+---
 
 ## Prerequisites
 
- -Node.js
- 
- -ejs
- 
- -MongoDB
- 
- -Bootstrap 5
- 
- -A stripe account with a personal stripe webhook key and API key
- 
- -A printful acount with a personal API key, and previously created store items
- 
- 
+- Node.js (v14+ recommended)
+- MongoDB Atlas or local MongoDB instance
+- Stripe account (test mode)
+- Printful account with store items
 
+---
+
+## Setup Instructions
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone <repo-url>
+   cd Onlyechoesv2
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables:**
+   Create a `.env` file in the root directory with the following keys:
+
+   ```env
+   URL=your_production_url
+   NGROK_URL=your_ngrok_url (for local dev)
+   STRIPE_WEBHOOK=your_stripe_webhook_secret
+   STRIPE_KEY=your_stripe_secret_key
+   SESSION_STORE=your_session_store_secret
+   SESSION_SECRET=your_session_secret
+   PORT=80 (or your preferred port)
+   DB_URL=your_mongodb_connection_string
+   API_KEY=your_printful_api_key
+   NODE_ENV=production or development
+   PRINTFUL_API_TOKEN=your_printful_api_key
+   ```
+
+4. **Seed the database:**
+
+   ```bash
+   node seeds.js
+   ```
+
+   This will fetch products from your Printful store and populate the MongoDB database.
+
+5. **Start the application:**
+   ```bash
+   npm start
+   ```
+   The app will be available at the URL specified in your `.env` file.
+
+---
+
+## Usage
+
+- Visit `/store` to browse products and add items to your cart.
+- Proceed to checkout and use the following Stripe test card:
+  - Card Number: `4242 4242 4242 4242`
+  - Any future expiry, any CVC, any ZIP
+- Orders are only fulfilled after successful payment.
+
+---
+
+## API Endpoints (Main)
+
+### Store
+
+- `GET /store` — View all products
+- `POST /store` — Add item to cart
+- `DELETE /store` — Empty cart
+- `DELETE /store/:id` — Remove item from cart
+- `PATCH /store/:id` — Update item quantity
+
+### Checkout
+
+- `GET /store/checkout` — View cart and checkout
+- `POST /store/checkout` — Submit shipping info, calculate shipping
+- `POST /store/checkout/confirm` — Confirm and pay
+- `PATCH/DELETE /store/checkout/:id` — Update/remove cart item
+
+### Webhooks
+
+- `POST /webhooks/stripe` — Stripe payment webhook
+- `POST /webhooks/printful` — Printful stock update webhook
+
+---
+
+## Development & Deployment
+
+- For local development, use [ngrok](https://ngrok.com/) to expose your local server for Stripe/Printful webhooks.
+- Deploy to Heroku, Render, or any Node.js-compatible host.
+
+---
+
+## Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+## License
+
+[MIT](LICENSE) - See the [LICENSE](LICENSE) file for details
+
+---

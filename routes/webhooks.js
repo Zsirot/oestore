@@ -41,9 +41,15 @@ const fulfillOrder = async function (stripeOrderId) {
     const completedOrder = await stripe.checkout.sessions.retrieve(
       stripeOrderId
     ); //stripeOrderId comes from a successfully completed payment
-    const { customer, items } = await Order.findById(
-      completedOrder.metadata.orderId
-    ); //looks up the DB order id which we created and stored in the metadata of the completed stripe checkout session (see the checkout/confirm post route)
+    const orderDoc = await Order.findById(completedOrder.metadata.orderId);
+    if (!orderDoc) {
+      console.error(
+        "Order not found in database for fulfillment:",
+        completedOrder.metadata.orderId
+      );
+      throw new AppError("Order not found in database for fulfillment", 400);
+    }
+    const { customer, items } = orderDoc;
 
     let cartItems = [];
     for (item of items) {

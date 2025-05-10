@@ -303,7 +303,7 @@
                         return res.json();
                     })
                     .then(data => {
-                        console.log('Received states data:', data);
+                        // console.log('Received states data:', data);
                         if (data && data.result && data.result.states && data.result.states.length > 0) {
                             stateSelect.innerHTML = '';
                             data.result.states.forEach(state => {
@@ -317,7 +317,7 @@
                             stateSelect.name = "state";
                             stateSelect.parentElement.style.display = 'block';
                         } else {
-                            console.log('No states available for country:', countryCode);
+                            // console.log('No states available for country:', countryCode);
                             stateSelect.innerHTML = '<option value="">Not required</option>';
                             stateSelect.disabled = true;
                             stateSelect.required = false;

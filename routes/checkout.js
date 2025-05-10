@@ -19,10 +19,10 @@ if (process.env.NODE_ENV !== "production") {
   url = process.env.NGROK_URL;
 }
 
-console.log(
-  "Loaded API_KEY:",
-  process.env.API_KEY ? process.env.API_KEY.slice(0, 6) + "..." : "NOT SET"
-);
+// console.log(
+//   "Loaded API_KEY:",
+//   process.env.API_KEY ? process.env.API_KEY.slice(0, 6) + "..." : "NOT SET"
+// );
 
 const stripe = require("stripe")(process.env.STRIPE_KEY);
 
@@ -61,7 +61,7 @@ const calcShipping = async (customer, items) => {
       total: parseFloat((retailCost + shipping + (tax || 0)).toFixed(2)),
       retailCost: retailCost.toFixed(2),
     };
-    console.log("calcShipping prices:", prices);
+    // console.log("calcShipping prices:", prices);
     return prices;
   } catch (e) {
     throw new AppError(e.response.data.result, 400);
@@ -120,7 +120,7 @@ router.post(
   verifyCheckout,
   catchAsync(async (req, res) => {
     try {
-      console.log("Checkout POST body:", req.body); // Debug log
+      // console.log("Checkout POST body:", req.body); // Debug log
       if (!req.body.country) {
         req.flash("error", "Country is required. Please select a country.");
         return res.redirect("/store/checkout");
@@ -240,10 +240,10 @@ router.post(
       // --- End extra validation ---
 
       // Build recipient object dynamically
-      console.log(
-        "Session customer before order creation:",
-        req.session.customer
-      );
+      // console.log(
+      //   "Session customer before order creation:",
+      //   req.session.customer
+      // );
       const recipient = {
         name: [customer.first_name, customer.last_name].join(" "),
         address1: customer.address_1,
@@ -280,7 +280,7 @@ router.post(
       // Make sure customer.prices is up to date with all fields (including VAT)
       customer.prices = prices;
       req.session.customer = customer;
-      console.log("customer.prices before order creation:", customer.prices);
+      // console.log("customer.prices before order creation:", customer.prices);
 
       // Add a 3-second delay before redirecting to the Stripe session URL
       setTimeout(() => {
@@ -299,7 +299,7 @@ router.get(
     try {
       const orderId = req.query.order_id;
       const order = await Order.findById(orderId); //find order in db
-      console.log("Order in /receipt route:", order);
+      // console.log("Order in /receipt route:", order);
       if (order) {
         const { customer, items } = order;
         const prices = customer.prices;
@@ -355,7 +355,7 @@ router.get("/printful-countries", async (req, res) => {
 router.get("/printful-states/:countryCode", async (req, res) => {
   try {
     const { countryCode } = req.params;
-    console.log("Fetching states for:", countryCode);
+    // console.log("Fetching states for:", countryCode);
 
     // First get all countries
     const response = await axios({
@@ -373,7 +373,7 @@ router.get("/printful-states/:countryCode", async (req, res) => {
       (c) => c.code.toLowerCase() === countryCode.toLowerCase()
     );
 
-    console.log("Found country:", country);
+    // console.log("Found country:", country);
 
     // Check if the country has states in the correct structure
     if (country && country.states && Array.isArray(country.states)) {
@@ -385,7 +385,7 @@ router.get("/printful-states/:countryCode", async (req, res) => {
       });
     } else {
       // Country doesn't have states or states is not in the expected format
-      console.log("No states found for country:", countryCode);
+      // console.log("No states found for country:", countryCode);
       res.json({
         result: {
           states: [],

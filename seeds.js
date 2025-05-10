@@ -6,9 +6,7 @@ const { Product, Variant } = require("./models/product");
 const AppError = require("./utils/AppError");
 
 // Load environment variables
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
-}
+require("dotenv").config();
 
 // MongoDB Configuration
 const MONGODB_CONFIG = {
@@ -275,15 +273,13 @@ const specifyWebhookTracking = async () => {
 
 // Production Mode Check
 console.log("[seeds.js] NODE_ENV:", process.env.NODE_ENV);
-if (process.env.NODE_ENV === "production") {
-  console.log("[seeds.js] Calling assignAllAvailable...");
-  try {
-    assignAllAvailable().catch((error) =>
-      console.error("[seeds.js] assignAllAvailable error:", error)
-    );
-  } catch (error) {
-    console.error("[seeds.js] Error calling assignAllAvailable:", error);
-  }
+console.log("[seeds.js] Calling assignAllAvailable...");
+try {
+  assignAllAvailable().catch((error) =>
+    console.error("[seeds.js] assignAllAvailable error:", error)
+  );
+} catch (error) {
+  console.error("[seeds.js] Error calling assignAllAvailable:", error);
 }
 
 module.exports = { assignAllAvailable, specifyWebhookTracking };

@@ -45,6 +45,7 @@
                                             <form action="/store"
                                                 class="d-flex flex-column align-items-center add-product-btn"
                                                 method="POST">
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                                 <div class="row d-flex justify-content-center">
                                                     <img class="col-6 storeImg w-33 p-3"
                                                         src="<%=product.variants[0].variant_img%>"
@@ -252,6 +253,7 @@
             <div class="offcanvas-body">
                 <div class="d-flex justify-content-between">
                     <form class="shop-list" action="/store?_method=DELETE" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button class="btn btn-outline-danger" type="submit">Empty Cart</button>
                     </form>
                     <form class="shop-list" action="/store/checkout" method="GET">
@@ -267,8 +269,9 @@
                                     <%=item.title%>
                                 </span>
                                 <form method="POST" action="/store/<%=item.id%>?_method=DELETE"
-                                    name="delete-item <%=i%>" class="d-flex justify-content-center"><button
-                                        type="delete" class="text-dark mx-2"
+                                    name="delete-item <%=i%>" class="d-flex justify-content-center">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button type="delete" class="text-dark mx-2"
                                         style="border: 0; background-color: transparent;"><i
                                             class="fas fa-minus-circle fs-6"></i></button>
                                 </form>
@@ -314,6 +317,8 @@
                                                                         <form method="POST"
                                                                             action="/store/<%=item.id%>?_method=PATCH"
                                                                             id="qtyupdate<%=i%>">
+                                                                            <input type="hidden" name="_csrf"
+                                                                                value="<%= csrfToken %>">
                                                                             <select class="form-select" name="qty"
                                                                                 id="cart-qty"
                                                                                 aria-label="quantity select"

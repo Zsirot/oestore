@@ -6,6 +6,7 @@
             <div class="col-md-6 my-5">
                 <form novalidate class="validated-form checkout-form d-grid gap-3" action="/store/checkout"
                     method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <div class="form-group">
                         <label for="email">Email address</label>
                         <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp"
@@ -148,8 +149,9 @@
                                     <%=item.title%>
                                 </span>
                                 <form method="POST" action="/store/checkout/<%=item.id%>?_method=DELETE"
-                                    name="delete-item <%=i%>" class="d-flex justify-content-center"><button
-                                        type="delete" class="text-dark mx-2"
+                                    name="delete-item <%=i%>" class="d-flex justify-content-center">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button type="delete" class="text-dark mx-2"
                                         style="border: 0; background-color: transparent;"><i
                                             class="fas fa-minus-circle fs-6"></i></button>
                                 </form>
@@ -195,6 +197,8 @@
                                                                         <form method="POST"
                                                                             action="/store/checkout/<%=item.id%>?_method=PATCH"
                                                                             id="qtyupdate<%=i%>">
+                                                                            <input type="hidden" name="_csrf"
+                                                                                value="<%= csrfToken %>">
                                                                             <select class="qty-update form-select"
                                                                                 name="qty" id="cart-qty"
                                                                                 aria-label="quantity select"

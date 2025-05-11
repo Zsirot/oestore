@@ -38,11 +38,14 @@ const findProduct = async function (prodId, color, size) {
 };
 
 const validateVariant = (req, res, next) => {
-  const { error } = variantSchema.validate(req.body);
+  // Remove _csrf from req.body before validation
+  const { _csrf, ...data } = req.body;
+  const { error } = variantSchema.validate(data);
   if (error) {
     const msg = error.details.map((el) => el.message).join(",");
     throw new AppError(msg, 400);
   } else {
+    req.body = data; // Optionally, set req.body to the validated data
     next();
   }
 };

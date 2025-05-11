@@ -185,6 +185,10 @@ footer {
    border-color: transparent;
 }
 
+.success-flash button, .error-flash button {
+   display: none; 
+}
+
 .alert-dismissible {
    padding-right: 1rem;
 }

@@ -17,6 +17,7 @@ const flash = require("connect-flash");
 const storeRoutes = require("./routes/store");
 const checkoutRoutes = require("./routes/checkout");
 const webhookRoutes = require("./routes/webhooks");
+const csurf = require("csurf");
 
 // =======================
 // Environment Variables
@@ -115,6 +116,21 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 app.use(flash());
 app.use(helmet());
+
+// CSRF protection: apply to all routes except webhooks
+app.use((req, res, next) => {
+  // Exclude webhook routes from CSRF protection
+  if (req.path.startsWith("/webhooks")) {
+    return next();
+  }
+  return csurf()(req, res, next);
+});
+
+// Make csrfToken available in all views
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken ? req.csrfToken() : null;
+  next();
+});
 
 // =======================
 // Content Security Policy (CSP)

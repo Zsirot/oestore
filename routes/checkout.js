@@ -3,6 +3,7 @@ const router = express.Router();
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const axios = require("axios").default;
+const { customerSchema } = require("../schemas");
 
 const Cart = require("../cart");
 const Order = require("../models/order");
@@ -115,30 +116,43 @@ router.delete("/:id", (req, res) => {
   }
 });
 
+// Validate customer data middleware
+const validateCustomer = (req, res, next) => {
+  const { error } = customerSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    req.flash("error", msg);
+    return res.redirect("/store/checkout");
+  }
+  next();
+};
+
 router.post(
   "/",
   verifyCheckout,
+  validateCustomer,
   catchAsync(async (req, res) => {
     try {
-      // console.log("Checkout POST body:", req.body); // Debug log
       if (!req.body.country) {
         req.flash("error", "Country is required. Please select a country.");
         return res.redirect("/store/checkout");
       }
       const { data, items, totals } = req.session.cart;
       cart = new Cart(data, items, totals);
+
       // Sanitize and coerce customer fields before saving to session
       const customer = {
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        email: req.body.email,
-        address_1: req.body.address_1,
-        address_2: req.body.address_2,
-        city: req.body.city,
-        state: req.body.state,
-        zip: req.body.zip ? parseInt(req.body.zip.trim(), 10) : undefined,
-        country: req.body.country,
+        first_name: req.body.first_name.trim(),
+        last_name: req.body.last_name.trim(),
+        email: req.body.email.trim().toLowerCase(),
+        address_1: req.body.address_1.trim(),
+        address_2: req.body.address_2 ? req.body.address_2.trim() : "",
+        city: req.body.city.trim(),
+        state: req.body.state ? req.body.state.trim() : "",
+        zip: parseInt(req.body.zip.trim(), 10),
+        country: req.body.country.trim(),
       };
+
       req.session.customer = customer;
       let prices = {};
       let cartItems = [];

@@ -68,7 +68,10 @@ A full-stack ecommerce web application for the Only Echoes band, featuring a cus
    API_KEY=your_printful_api_key
    NODE_ENV=production or development
    PRINTFUL_API_TOKEN=your_printful_api_key
+   PRINTFUL_WEBHOOK_SECRET=your_printful_webhook_secret
    ```
+
+   > **Note:** The `PRINTFUL_WEBHOOK_SECRET` is used to validate incoming webhooks from Printful. Generate a secure random string (at least 32 characters) for this value. The same secret must be configured in your Printful webhook settings.
 
 4. **Seed the database:**
 
@@ -116,7 +119,14 @@ A full-stack ecommerce web application for the Only Echoes band, featuring a cus
 ### Webhooks
 
 - `POST /webhooks/stripe` — Stripe payment webhook
-- `POST /webhooks/printful` — Printful stock update webhook
+- `POST /webhooks/printful` — Printful stock update webhook (requires signature validation)
+
+> **Webhook Security:**
+>
+> - Stripe webhooks are validated using the `STRIPE_WEBHOOK` secret
+> - Printful webhooks are validated using the `PRINTFUL_WEBHOOK_SECRET`
+> - Both webhook endpoints are rate-limited to prevent abuse
+> - Always use HTTPS in production
 
 ---
 

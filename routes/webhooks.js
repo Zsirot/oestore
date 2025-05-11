@@ -4,6 +4,7 @@ const AppError = require("../utils/AppError");
 const axios = require("axios").default;
 const morgan = require("morgan");
 const crypto = require("crypto");
+const { webhookSchema } = require("../schemas");
 
 const Order = require("../models/order");
 const { Product, Variant } = require("../models/product");
@@ -180,10 +181,22 @@ function refreshTrigger() {
   let triggerBlock = false;
   console.log("trigger reset");
 }
+
+// Validate webhook payload
+const validateWebhookPayload = (req, res, next) => {
+  const { error } = webhookSchema.validate(req.body);
+  if (error) {
+    console.error("Invalid webhook payload:", error.details[0].message);
+    return res.status(400).json({ error: "Invalid webhook payload" });
+  }
+  next();
+};
+
 router.post(
   "/printful",
   webhookLimiter,
   express.json(),
+  validateWebhookPayload,
   validatePrintfulWebhook,
   async (req, res) => {
     if (!triggerBlock) {

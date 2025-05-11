@@ -120,8 +120,11 @@ router.delete("/:id", (req, res) => {
 const validateCustomer = (req, res, next) => {
   const { error } = customerSchema.validate(req.body);
   if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    req.flash("error", msg);
+    console.error(
+      "Validation error:",
+      error.details.map((el) => el.message).join(",")
+    );
+    req.flash("error", "Please check your input and try again");
     return res.redirect("/store/checkout");
   }
   next();
@@ -416,8 +419,7 @@ router.get("/printful-states/:countryCode", async (req, res) => {
 
     res.status(500).json({
       error: "Failed to fetch states",
-      details: error.response?.data || error.message,
-      status: error.response?.status,
+      message: "Please try again later",
     });
   }
 });

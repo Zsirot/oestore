@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 const verifyCheckout = (req, res, next) => {
   if (!req.session.cart || !req.session.cart.items[0]) {
-    req.flash("error", "No items in cart, returned to store");
+    req.flash("error", "Your cart is empty");
     res.redirect("/store");
   } else {
     return next();
@@ -26,11 +26,11 @@ const verifyConfirmation = (req, res, next) => {
   const { error } = checkoutSchema.validate(req.session);
 
   if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    req.flash(
-      "error",
-      "Please enter customer details again. Session refreshed."
+    console.error(
+      "Confirmation validation error:",
+      error.details.map((el) => el.message).join(",")
     );
+    req.flash("error", "Please complete your checkout information");
     return res.redirect("/store/checkout");
   } else {
     next();

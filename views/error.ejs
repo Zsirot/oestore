@@ -1,7 +1,6 @@
 <% layout('layouts/boilerplate') %>
     <div class="d-flex align-items-center justify-content-center mb-5" style="height: 60vh;">
         <h1 class="">
-            ERROR:
-            <%=err.stack%>
+            <%= err.statusCode %> - <%= err.message %>
         </h1>
     </div>

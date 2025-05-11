@@ -17,6 +17,7 @@ const MONGODB_CONFIG = {
 };
 
 // Initialize MongoDB connection
+mongoose.set("strictQuery", true);
 mongoose.connect(process.env.DB_URL, MONGODB_CONFIG);
 
 mongoose.connection.on("error", (err) => {

@@ -30,6 +30,8 @@ if (process.env.NODE_ENV !== "production") {
 // Database Connection
 // =======================
 // mongoose.connect('mongodb://localhost:27017/neon-noir');
+
+mongoose.set("strictQuery", true); // Only allow fields defined in schema in queries
 mongoose.connect(process.env.DB_URL);
 
 const db = mongoose.connection;
@@ -43,6 +45,16 @@ db.once("open", () => {
 // =======================
 const app = express();
 app.enable("trust proxy");
+
+// Enforce HTTPS in production
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    if (req.headers["x-forwarded-proto"] !== "https") {
+      return res.redirect("https://" + req.headers.host + req.url);
+    }
+    next();
+  });
+}
 
 // =======================
 // Middleware Setup
@@ -92,8 +104,9 @@ const sessionConfig = {
   unset: "destroy",
   name: "sessionId",
   cookie: {
-    // this is for the cookie our server sends to the browser
-    httpOnly: true, // looks like this is already default, but a good security feature
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // only send cookie over HTTPS in production
+    sameSite: "lax", // helps prevent CSRF
     expires: Date.now() + 1000 * 60 * 60 * 24, // since expirations are in milliseconds, we add a day to the date
     maxAge: 1000 * 60 * 60 * 24, // also a day
   },

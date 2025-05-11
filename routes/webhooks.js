@@ -139,8 +139,8 @@ const fulfillOrder = async function (stripeOrderId) {
     );
   } catch (e) {
     const errorMsg = e?.raw?.message || e?.message || "Unknown error";
-    console.log("fulfillOrder error:", errorMsg);
-    throw new AppError(errorMsg, 400);
+    console.error("fulfillOrder error:", errorMsg);
+    throw new AppError("Failed to process order", 400);
   }
 };
 
@@ -148,7 +148,6 @@ router.post(
   "/stripe",
   express.raw({ type: "application/json" }),
   (req, res) => {
-    //webhook that receives successfully made stripe payments
     const payload = req.body;
     const sig = req.headers["stripe-signature"];
     let event;
@@ -160,11 +159,12 @@ router.post(
         stripeEndpointSecret
       );
     } catch (err) {
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+      console.error("Stripe webhook error:", err.message);
+      return res.status(400).json({ error: "Invalid webhook signature" });
     }
     if (event.type === "checkout.session.completed") {
-      const stripeOrderId = event.data.object.id; //saved order ID from stripe we can recall in the next function
-      fulfillOrder(stripeOrderId); // Fulfill the purchase...
+      const stripeOrderId = event.data.object.id;
+      fulfillOrder(stripeOrderId);
     }
     console.log("Stripe payment succeeded");
     res.status(200).send();

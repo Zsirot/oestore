@@ -260,6 +260,7 @@ const specifyWebhookTracking = async () => {
             product_ids: stockProductIds,
           },
         },
+        secret: process.env.PRINTFUL_WEBHOOK_SECRET,
       },
       printfulConfig
     );

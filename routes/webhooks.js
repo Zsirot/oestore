@@ -3,6 +3,7 @@ const router = express.Router();
 const AppError = require("../utils/AppError");
 const axios = require("axios").default;
 const morgan = require("morgan");
+const crypto = require("crypto");
 
 const Order = require("../models/order");
 const { Product, Variant } = require("../models/product");
@@ -15,16 +16,49 @@ if (process.env.NODE_ENV !== "production") {
 
 const stripe = require("stripe")(process.env.STRIPE_KEY);
 const stripeEndpointSecret = process.env.STRIPE_WEBHOOK;
+const printfulWebhookSecret = process.env.PRINTFUL_WEBHOOK_SECRET;
 
 const rateLimit = require("express-rate-limit");
 
+// Improved rate limiter configuration
 const webhookLimiter = rateLimit({
-  windowMs: 2 * 60 * 1000, // 3 minute
-  max: 2, // limit each IP to 2 requests per windowMs. For some reason, this limits to 4 requests. Using 1 here breaks it?
+  windowMs: 2 * 60 * 1000, // 2 minutes
+  max: 2, // limit each IP to 2 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: {
+    error: "Too Many Requests",
+    message: "Please try again later",
+  },
 });
 
-router.use("/printful", webhookLimiter);
-// router.use("/printful", morgan('dev'))
+// Validate Printful webhook signature
+const validatePrintfulWebhook = (req, res, next) => {
+  const signature = req.headers["x-printful-signature"];
+
+  if (!signature) {
+    console.error("Missing Printful webhook signature");
+    return res.status(401).json({ error: "Missing webhook signature" });
+  }
+
+  if (!printfulWebhookSecret) {
+    console.error("Printful webhook secret not configured");
+    return res.status(500).json({ error: "Webhook configuration error" });
+  }
+
+  // Create HMAC hash of the request body using the webhook secret
+  const hmac = crypto.createHmac("sha256", printfulWebhookSecret);
+  const digest = hmac.update(JSON.stringify(req.body)).digest("hex");
+
+  // Compare the computed hash with the signature from Printful
+  if (digest !== signature) {
+    console.error("Invalid Printful webhook signature");
+    return res.status(401).json({ error: "Invalid webhook signature" });
+  }
+
+  next();
+};
+
 const deleteIncompleteOrders = async function () {
   const deleteOrders = await Order.deleteMany({ fulfilled: false });
   console.log(`${deleteOrders.deletedCount} incomplete orders deleted`);
@@ -146,19 +180,25 @@ function refreshTrigger() {
   let triggerBlock = false;
   console.log("trigger reset");
 }
-router.post("/printful", webhookLimiter, async (req, res) => {
-  if (!triggerBlock) {
-    //if block is "false", tells printful message received, blocks the any further requests, and runs functions
-    console.log("accepted");
-    res.status(200).send();
-    triggerBlock = true;
-    assignAllAvailable(); // refreshes the database with live stock info from printful
-    await specifyWebhookTracking(); // tells printful which items' stock to track after they were assigned above
-    setTimeout(refreshTrigger, 30 * 1000); //stops blocking requests after 30 seceonds
-  } else {
-    res.status(200).send(); //notifies printful that any additional requests were received.
-    console.log("rejected");
+router.post(
+  "/printful",
+  webhookLimiter,
+  express.json(),
+  validatePrintfulWebhook,
+  async (req, res) => {
+    if (!triggerBlock) {
+      //if block is "false", tells printful message received, blocks the any further requests, and runs functions
+      console.log("accepted");
+      res.status(200).send();
+      triggerBlock = true;
+      assignAllAvailable(); // refreshes the database with live stock info from printful
+      await specifyWebhookTracking(); // tells printful which items' stock to track after they were assigned above
+      setTimeout(refreshTrigger, 30 * 1000); //stops blocking requests after 30 seceonds
+    } else {
+      res.status(200).send(); //notifies printful that any additional requests were received.
+      console.log("rejected");
+    }
   }
-});
+);
 
 module.exports = router;

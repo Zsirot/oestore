@@ -115,7 +115,7 @@
             <button class="btn btn-primary my-4" type="submit">RETURN TO STORE</button>
         </form>
     </div>
-    <% if (!order || !order.fulfilled) { %>
+    <% if (!fulfilled) { %>
         <div id="waiting-message" class="alert alert-info text-center">
             Your order is being processed. This page will update automatically when your order is complete.
         </div>

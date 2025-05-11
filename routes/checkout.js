@@ -118,7 +118,9 @@ router.delete("/:id", (req, res) => {
 
 // Validate customer data middleware
 const validateCustomer = (req, res, next) => {
-  const { error } = customerSchema.validate(req.body);
+  // Remove _csrf from req.body before validation
+  const { _csrf, ...data } = req.body;
+  const { error } = customerSchema.validate(data);
   if (error) {
     console.error(
       "Validation error:",
@@ -127,6 +129,7 @@ const validateCustomer = (req, res, next) => {
     req.flash("error", "Please check your input and try again");
     return res.redirect("/store/checkout");
   }
+  req.body = data; // Optionally, set req.body to the validated data
   next();
 };
 
@@ -316,11 +319,35 @@ router.get(
     try {
       const orderId = req.query.order_id;
       const order = await Order.findById(orderId); //find order in db
-      // console.log("Order in /receipt route:", order);
       if (order) {
+        // Only send necessary customer fields
         const { customer, items } = order;
         const prices = customer.prices;
-        res.render("receipt", { customer, items, prices, order });
+        const safeCustomer = {
+          first_name: customer.first_name,
+          last_name: customer.last_name,
+          email: customer.email,
+          address_1: customer.address_1,
+          address_2: customer.address_2,
+          city: customer.city,
+          state: customer.state,
+          zip: customer.zip,
+          country: customer.country,
+        };
+        const safeItems = items.map((item) => ({
+          title: item.title,
+          qty: item.qty,
+          price: item.price,
+          color: item.color,
+          size: item.size,
+          image: item.image,
+        }));
+        res.render("receipt", {
+          customer: safeCustomer,
+          items: safeItems,
+          prices,
+          fulfilled: order.fulfilled,
+        });
         if (order.fulfilled === true) {
           req.session.cart = null;
           req.session.save(); // Ensure session is saved after clearing cart

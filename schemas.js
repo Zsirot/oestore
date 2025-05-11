@@ -8,7 +8,7 @@ module.exports.variantSchema = Joi.object({
   size: Joi.string(),
   qty: Joi.number().required().min(1).max(100),
   color: Joi.string(),
-});
+}).unknown(false);
 
 // Customer information validation
 module.exports.customerSchema = Joi.object({
@@ -21,7 +21,7 @@ module.exports.customerSchema = Joi.object({
   state: Joi.string().allow("", null).trim().max(50),
   zip: Joi.number().required().min(10000).max(99999),
   country: Joi.string().required().trim().length(2),
-});
+}).unknown(false);
 
 // Cart item validation
 module.exports.cartItemSchema = Joi.object({
@@ -32,17 +32,17 @@ module.exports.cartItemSchema = Joi.object({
   color: Joi.string().allow(""),
   size: Joi.string().allow(""),
   sync_variant_id: Joi.number().required(),
-});
+}).unknown(false);
 
 // Order validation
 module.exports.orderSchema = Joi.object({
   fulfilled: Joi.boolean().required(),
   items: Joi.array().items(module.exports.cartItemSchema).required(),
   customer: module.exports.customerSchema.required(),
-});
+}).unknown(false);
 
 // Webhook payload validation
 module.exports.webhookSchema = Joi.object({
   type: Joi.string().required(),
   data: Joi.object().required(),
-});
+}).unknown(false);

@@ -192,7 +192,7 @@ const validateWebhookPayload = (req, res, next) => {
 };
 
 router.post(
-  '/printful',
+  `/printful/${process.env.PRINTFUL_WEBHOOK_PATH_SECRET}`,
   webhookLimiter,
   express.json(),
   validateWebhookPayload,
@@ -213,7 +213,7 @@ router.post(
       await specifyWebhookTracking(); // tells printful which items' stock to track after they were assigned above
       setTimeout(refreshTrigger, 30 * 1000); //stops blocking requests after 30 seceonds
     } else {
-      res.status(200).send(); //notifies printful that any additional requests were received.
+      res.status(422).send(); //notifies printful that any additional requests were received.
       console.log('rejected');
     }
   },

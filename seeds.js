@@ -260,8 +260,13 @@ const specifyWebhookTracking = async () => {
     const response = await axios.post(
       'https://api.printful.com/webhooks',
       {
-        url: `${url}/webhooks/printful`,
-        types: ['stock_updated', 'product_synced', 'product_updated'],
+        url: `${url}/webhooks/printful/${process.env.PRINTFUL_WEBHOOK_PATH_SECRET}`,
+        types: [
+          'stock_updated',
+          'product_synced',
+          'product_updated',
+          'product_deleted',
+        ],
         params: {
           stock_updated: {
             product_ids: stockProductIds,

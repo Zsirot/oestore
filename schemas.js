@@ -43,6 +43,14 @@ module.exports.orderSchema = Joi.object({
 
 // Webhook payload validation
 module.exports.webhookSchema = Joi.object({
-  type: Joi.string().required(),
+  type: Joi.string()
+    .valid(
+      'stock_updated',
+      'product_synced',
+      'product_updated',
+      'product_deleted',
+    )
+    .required(),
+
   data: Joi.object().required(),
 }).unknown(true);

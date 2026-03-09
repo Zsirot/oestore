@@ -1,12 +1,12 @@
 // Configuration and Setup
-console.log("[seeds.js] Script started");
-const mongoose = require("mongoose");
-const axios = require("axios").default;
-const { Product, Variant } = require("./models/product");
-const AppError = require("./utils/AppError");
+console.log('[seeds.js] Script started');
+const mongoose = require('mongoose');
+const axios = require('axios').default;
+const { Product, Variant } = require('./models/product');
+const AppError = require('./utils/AppError');
 
 // Load environment variables
-require("dotenv").config();
+require('dotenv').config();
 
 // MongoDB Configuration
 const MONGODB_CONFIG = {
@@ -17,31 +17,31 @@ const MONGODB_CONFIG = {
 };
 
 // Initialize MongoDB connection
-mongoose.set("strictQuery", true);
+mongoose.set('strictQuery', true);
 mongoose.connect(process.env.DB_URL, MONGODB_CONFIG);
 
-mongoose.connection.on("error", (err) => {
-  console.error("[seeds.js] MongoDB connection error:", err);
+mongoose.connection.on('error', (err) => {
+  console.error('[seeds.js] MongoDB connection error:', err);
   process.exit(1);
 });
 
-mongoose.connection.once("open", () => {
-  console.log("[seeds.js] Connected to MongoDB");
+mongoose.connection.once('open', () => {
+  console.log('[seeds.js] Connected to MongoDB');
 });
 
 // Environment Configuration
 const getEnvironmentUrl = () => {
-  return process.env.NODE_ENV !== "production"
+  return process.env.NODE_ENV !== 'production'
     ? process.env.NGROK_URL
     : process.env.URL;
 };
 
 const url = getEnvironmentUrl();
 console.log(
-  "[seeds.js] Environment variables loaded. URL:",
+  '[seeds.js] Environment variables loaded. URL:',
   url,
-  "API_KEY:",
-  process.env.API_KEY ? "set" : "not set"
+  'API_KEY:',
+  process.env.API_KEY ? 'set' : 'not set',
 );
 
 // Printful API Configuration
@@ -53,9 +53,9 @@ const printfulConfig = {
 const processVariant = function (product, syncVariant, stockInfo) {
   // Check stock status
   const stockStatus = stockInfo.find(
-    (obj) => obj.variant_id === syncVariant.variant_id
+    (obj) => obj.variant_id === syncVariant.variant_id,
   );
-  const isInStock = stockStatus?.stock !== "supplier_out_of_stock";
+  const isInStock = stockStatus?.stock !== 'supplier_out_of_stock';
 
   // Extract variant attributes
   const variantData = {
@@ -64,8 +64,8 @@ const processVariant = function (product, syncVariant, stockInfo) {
     inStock: isInStock,
     sync_variant_id: syncVariant.id,
     retail_price: syncVariant.retail_price,
-    size: syncVariant.size || "",
-    color: syncVariant.color || "",
+    size: syncVariant.size || '',
+    color: syncVariant.color || '',
     variant_img: syncVariant.files[1].preview_url,
   };
 
@@ -82,7 +82,7 @@ const calculatePriceRange = (variants) => {
 
 // Product Description Processing
 const processProductDescription = (catalogInfo) => {
-  const descriptionParts = catalogInfo.product.description.split("\u2022");
+  const descriptionParts = catalogInfo.product.description.split('\u2022');
   return {
     head: descriptionParts[0],
     bullets: descriptionParts.slice(1),
@@ -99,21 +99,21 @@ const processStockInfo = (catalogInfo) => {
 
 // Product Building and Saving
 const fetchAndBuildProduct = async (syncProductId) => {
-  console.log(
-    `\n[fetchAndBuildProduct] Starting for syncProductId: ${syncProductId}`
-  );
+  // console.log(
+  //   `\n[fetchAndBuildProduct] Starting for syncProductId: ${syncProductId}`,
+  // );
 
   try {
     // Fetch sync product data
     const syncProductRes = await axios.get(
       `https://api.printful.com/store/products/${syncProductId}`,
-      printfulConfig
+      printfulConfig,
     );
     const { sync_product, sync_variants } = syncProductRes.data.result;
 
-    console.log(
-      `[fetchAndBuildProduct] Fetched sync product: ${sync_product.name}`
-    );
+    // console.log(
+    //   `[fetchAndBuildProduct] Fetched sync product: ${sync_product.name}`,
+    // );
 
     // Initialize product object
     const product = {
@@ -122,7 +122,7 @@ const fetchAndBuildProduct = async (syncProductId) => {
       thumbnail_url:
         sync_product.thumbnail_url ||
         sync_variants[0]?.files[1]?.preview_url ||
-        "",
+        '',
       stock_product_id: sync_variants[0].product.product_id,
       variants: [],
     };
@@ -130,20 +130,20 @@ const fetchAndBuildProduct = async (syncProductId) => {
     // Fetch stock product data
     const stockRes = await axios.get(
       `https://api.printful.com/products/${product.stock_product_id}`,
-      printfulConfig
+      printfulConfig,
     );
-    console.log(
-      `[fetchAndBuildProduct] Fetched stock product for: ${product.name}`
-    );
+    // console.log(
+    //   `[fetchAndBuildProduct] Fetched stock product for: ${product.name}`,
+    // );
 
     const catalogInfo = stockRes.data.result;
     product.description = processProductDescription(catalogInfo);
 
     // Process variants
     const stockInfo = processStockInfo(catalogInfo);
-    console.log(
-      `[fetchAndBuildProduct] Processing ${sync_variants.length} sync variants...`
-    );
+    // console.log(
+    //   `[fetchAndBuildProduct] Processing ${sync_variants.length} sync variants...`,
+    // );
 
     sync_variants.forEach((syncVariant) => {
       processVariant(product, syncVariant, stockInfo);
@@ -156,7 +156,7 @@ const fetchAndBuildProduct = async (syncProductId) => {
     const finalProduct = new Product({
       product_id: product.id,
       stock_product_id: product.stock_product_id,
-      name: product.name.split("(")[0].trim(),
+      name: product.name.split('(')[0].trim(),
       description: product.description,
       price_range: product.price_range,
       thumbnail_url: product.thumbnail_url,
@@ -179,18 +179,18 @@ const fetchAndBuildProduct = async (syncProductId) => {
 
     await finalProduct.save();
     console.log(
-      `[fetchAndBuildProduct] Saved product: ${finalProduct.name} with ${savedVariants} variants.`
+      `[fetchAndBuildProduct] Saved product: ${finalProduct.name} with ${savedVariants} variants.`,
     );
   } catch (error) {
-    if (error.response?.statusText === "Not Found") {
+    if (error.response?.statusText === 'Not Found') {
       console.log(
-        "error:",
-        "a stock product is discontinued or out of stock. Remove it from your printful store"
+        'error:',
+        'a stock product is discontinued or out of stock. Remove it from your printful store',
       );
     } else {
       console.error(
         `[fetchAndBuildProduct] Error for syncProductId ${syncProductId}:`,
-        error
+        error,
       );
     }
   }
@@ -199,7 +199,7 @@ const fetchAndBuildProduct = async (syncProductId) => {
 // Database Management Functions
 const clearDatabase = async () => {
   console.log(
-    `\n[clearDatabase] Deleting all existing products and variants...`
+    `\n[clearDatabase] Deleting all existing products and variants...`,
   );
   await Product.deleteMany({});
   await Variant.deleteMany({});
@@ -219,28 +219,31 @@ const assignAll = async function (...productIds) {
 
 const assignAllAvailable = async () => {
   console.log(
-    `\n[assignAllAvailable] Fetching all products from Printful store...`
+    `\n[assignAllAvailable] Fetching all products from Printful store...`,
   );
 
   try {
     const response = await axios.get(
-      "https://api.printful.com/store/products",
-      printfulConfig
+      'https://api.printful.com/store/products',
+      printfulConfig,
     );
 
     const products = response.data.result;
     const syncProductIds = products.map((product) => product.id);
 
     console.log(
-      `[assignAllAvailable] Found ${syncProductIds.length} products. Assigning all...`
+      `[assignAllAvailable] Found ${syncProductIds.length} products. Assigning all...`,
     );
     await assignAll(...syncProductIds);
+    await specifyWebhookTracking();
 
-    return console.log("[assignAllAvailable] All products assigned");
+    console.log(
+      '[assignAllAvailable] All products assigned and webhook tracking configured',
+    );
   } catch (error) {
     console.error(
-      "[assignAllAvailable] Error fetching products from Printful:",
-      error.response ? error.response.data : error
+      '[assignAllAvailable] Error fetching products from Printful:',
+      error.response ? error.response.data : error,
     );
   }
 };
@@ -248,14 +251,17 @@ const assignAllAvailable = async () => {
 // Webhook Configuration
 const specifyWebhookTracking = async () => {
   try {
+    console.log(
+      '\n[specifyWebhookTracking] Configuring webhooks with Printful...',
+    );
     const allProducts = await Product.find({});
     const stockProductIds = allProducts.map((prod) => prod.stock_product_id);
 
     const response = await axios.post(
-      "https://api.printful.com/webhooks",
+      'https://api.printful.com/webhooks',
       {
         url: `${url}/webhooks/printful`,
-        types: ["stock_updated", "product_synced", "product_updated"],
+        types: ['stock_updated', 'product_synced', 'product_updated'],
         params: {
           stock_updated: {
             product_ids: stockProductIds,
@@ -263,25 +269,25 @@ const specifyWebhookTracking = async () => {
         },
         secret: process.env.PRINTFUL_WEBHOOK_SECRET,
       },
-      printfulConfig
+      printfulConfig,
     );
 
-    console.log("Webhook configuration sent successfully!");
+    console.log('Webhook configuration sent successfully!');
   } catch (error) {
-    console.error("Error configuring webhooks:", error);
+    console.error('Error configuring webhooks:', error);
     throw new AppError(error.response, error.status);
   }
 };
 
 // Production Mode Check
-console.log("[seeds.js] NODE_ENV:", process.env.NODE_ENV);
-console.log("[seeds.js] Calling assignAllAvailable...");
+console.log('[seeds.js] NODE_ENV:', process.env.NODE_ENV);
+console.log('[seeds.js] Calling assignAllAvailable...');
 try {
   assignAllAvailable().catch((error) =>
-    console.error("[seeds.js] assignAllAvailable error:", error)
+    console.error('[seeds.js] assignAllAvailable error:', error),
   );
 } catch (error) {
-  console.error("[seeds.js] Error calling assignAllAvailable:", error);
+  console.error('[seeds.js] Error calling assignAllAvailable:', error);
 }
 
 module.exports = { assignAllAvailable, specifyWebhookTracking };

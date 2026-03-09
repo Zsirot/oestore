@@ -1,4 +1,4 @@
-const Joi = require("joi");
+const Joi = require('joi');
 
 // Product variant validation
 module.exports.variantSchema = Joi.object({
@@ -16,9 +16,9 @@ module.exports.customerSchema = Joi.object({
   last_name: Joi.string().required().trim().min(2).max(50),
   email: Joi.string().required().email().trim(),
   address_1: Joi.string().required().trim().min(5).max(100),
-  address_2: Joi.string().allow("").trim().max(100),
+  address_2: Joi.string().allow('').trim().max(100),
   city: Joi.string().required().trim().min(2).max(50),
-  state: Joi.string().allow("", null).trim().max(50),
+  state: Joi.string().allow('', null).trim().max(50),
   zip: Joi.number().required().min(10000).max(99999),
   country: Joi.string().required().trim().length(2),
 }).unknown(false);
@@ -29,8 +29,8 @@ module.exports.cartItemSchema = Joi.object({
   price: Joi.number().required().min(0),
   qty: Joi.number().required().min(1).max(100),
   image: Joi.string().required(),
-  color: Joi.string().allow(""),
-  size: Joi.string().allow(""),
+  color: Joi.string().allow(''),
+  size: Joi.string().allow(''),
   sync_variant_id: Joi.number().required(),
 }).unknown(false);
 
@@ -45,4 +45,4 @@ module.exports.orderSchema = Joi.object({
 module.exports.webhookSchema = Joi.object({
   type: Joi.string().required(),
   data: Joi.object().required(),
-}).unknown(false);
+}).unknown(true);

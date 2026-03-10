@@ -40,62 +40,60 @@ A full-stack ecommerce web application for the Only Echoes band, featuring a cus
 
 ## Setup Instructions
 
-1. **Clone the repository:**
+1.  **Clone the repository:**
 
-   ```bash
-   git clone <repo-url>
-   cd Onlyechoesv2
-   ```
+    ```bash
+    git clone <repo-url>
+    cd Onlyechoesv2
+    ```
 
-2. **Install dependencies:**
+2.  **Install dependencies:**
 
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
-3. **Configure environment variables:**
-   Create a `.env` file in the root directory with the following keys:
+3.  **Configure environment variables:**
+    Create a `.env` file in the root directory with the following keys:
 
-   ```env
-   URL=your_production_url
-   NGROK_URL=your_ngrok_url (for local dev)
-   # Ngrok URL always changes when ngrok is launched, so it should be updated in the .env file
-   # Must be updated in the stripe sandbox when after updating here, otherwise stripe webhooks will not work
-   STRIPE_WEBHOOK=your_stripe_webhook_secret
-   STRIPE_KEY=your_stripe_secret_key
-   SESSION_STORE=your_session_store_secret
-   SESSION_SECRET=your_session_secret
-   PORT=80 (or your preferred port)
-   DB_URL=your_mongodb_connection_string
-   API_KEY=your_printful_api_key
-   NODE_ENV=production or development
-   PRINTFUL_API_TOKEN=your_printful_api_key
-   PRINTFUL_WEBHOOK_PATH_SECRET=your_printful_webhook_path_secret
+    ```env
+    URL=your_production_url
+    NGROK_URL=your_ngrok_url (for local dev)
+    # Ngrok URL always changes when ngrok is launched, so it should be updated in the .env file
+    # Must be updated in the stripe sandbox when after updating here, otherwise stripe webhooks will not work
+    STRIPE_WEBHOOK=your_stripe_webhook_secret
+    STRIPE_KEY=your_stripe_secret_key
+    SESSION_STORE=your_session_store_secret
+    SESSION_SECRET=your_session_secret
+    PORT=80 (or your preferred port)
+    DB_URL=your_mongodb_connection_string
+    API_KEY=your_printful_api_key
+    NODE_ENV=production or development
+    PRINTFUL_API_TOKEN=your_printful_api_key
+    PRINTFUL_WEBHOOK_PATH_SECRET=your_printful_webhook_path_secret
 
 
-   ```
+    ```
 
-   > **Note:** # PRINTFUL_WEBHOOK_PATH_SECRET is used to verify that incoming webhook requests are from printful
+    > **Note:** # PRINTFUL_WEBHOOK_PATH_SECRET is used to verify that incoming webhook requests are from printful
 
-   # Generate a random key. This is sent as part of the specifyWebhookTracking() function in the seeds.js file,
+             # Generate a random key. This is sent as part of the specifyWebhookTracking() function in the seeds.js file,
+             # and is also used in the verifyPrintfulWebhook middleware to verify incoming requests
+             # When printful sends a webhook request, it will include this secret in the URL. This helps protect the endpoint.
 
-   # and is also used in the verifyPrintfulWebhook middleware to verify incoming requests
+4.  **Seed the database:**
 
-   # When printful sends a webhook request, it will include this secret in the URL. This helps protect the endpoint.
+    ```bash
+    node seeds.js
+    ```
 
-4. **Seed the database:**
+    This will fetch products from your Printful store and populate the MongoDB database.
 
-   ```bash
-   node seeds.js
-   ```
-
-   This will fetch products from your Printful store and populate the MongoDB database.
-
-5. **Start the application:**
-   ```bash
-   npm start
-   ```
-   The app will be available at the URL specified in your `.env` file.
+5.  **Start the application:**
+    ```bash
+    npm start
+    ```
+    The app will be available at the URL specified in your `.env` file.
 
 ---
 

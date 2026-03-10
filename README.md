@@ -59,6 +59,8 @@ A full-stack ecommerce web application for the Only Echoes band, featuring a cus
    ```env
    URL=your_production_url
    NGROK_URL=your_ngrok_url (for local dev)
+   # Ngrok URL always changes when ngrok is launched, so it should be updated in the .env file
+   # Must be updated in the stripe sandbox when after updating here, otherwise stripe webhooks will not work
    STRIPE_WEBHOOK=your_stripe_webhook_secret
    STRIPE_KEY=your_stripe_secret_key
    SESSION_STORE=your_session_store_secret
@@ -68,10 +70,18 @@ A full-stack ecommerce web application for the Only Echoes band, featuring a cus
    API_KEY=your_printful_api_key
    NODE_ENV=production or development
    PRINTFUL_API_TOKEN=your_printful_api_key
-   PRINTFUL_WEBHOOK_SECRET=your_printful_webhook_secret
+   PRINTFUL_WEBHOOK_PATH_SECRET=your_printful_webhook_path_secret
+
+
    ```
 
-   > **Note:** The `PRINTFUL_WEBHOOK_SECRET` is used to validate incoming webhooks from Printful. Generate a secure random string (at least 32 characters) for this value. The same secret must be configured in your Printful webhook settings.
+   > **Note:** # PRINTFUL_WEBHOOK_PATH_SECRET is used to verify that incoming webhook requests are from printful
+
+   # Generate a random key. This is sent as part of the specifyWebhookTracking() function in the seeds.js file,
+
+   # and is also used in the verifyPrintfulWebhook middleware to verify incoming requests
+
+   # When printful sends a webhook request, it will include this secret in the URL. This helps protect the endpoint.
 
 4. **Seed the database:**
 

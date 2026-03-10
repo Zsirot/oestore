@@ -33,33 +33,6 @@ const webhookLimiter = rateLimit({
   },
 });
 
-// Validate Printful webhook signature
-const validatePrintfulWebhook = (req, res, next) => {
-  const signature = req.headers['x-printful-signature'];
-
-  if (!signature) {
-    console.error('Missing Printful webhook signature');
-    return res.status(401).json({ error: 'Missing webhook signature' });
-  }
-
-  if (!printfulWebhookSecret) {
-    console.error('Printful webhook secret not configured');
-    return res.status(500).json({ error: 'Webhook configuration error' });
-  }
-
-  // Create HMAC hash of the request body using the webhook secret
-  const hmac = crypto.createHmac('sha256', printfulWebhookSecret);
-  const digest = hmac.update(JSON.stringify(req.body)).digest('hex');
-
-  // Compare the computed hash with the signature from Printful
-  if (digest !== signature) {
-    console.error('Invalid Printful webhook signature');
-    return res.status(401).json({ error: 'Invalid webhook signature' });
-  }
-
-  next();
-};
-
 const deleteIncompleteOrders = async function () {
   const deleteOrders = await Order.deleteMany({ fulfilled: false });
   console.log(`${deleteOrders.deletedCount} incomplete orders deleted`);
@@ -196,7 +169,6 @@ router.post(
   webhookLimiter,
   express.json(),
   validateWebhookPayload,
-  // validatePrintfulWebhook,
   async (req, res) => {
     console.log('=== PRINTFUL WEBHOOK RECEIVED ===');
     console.log('Headers:', req.headers);

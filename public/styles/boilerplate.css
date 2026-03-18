@@ -319,3 +319,24 @@ footer {
    text-decoration: none !important;
 
 }
+
+.store-banner-info {
+    z-index: 5;
+    width: 100vw;
+    margin: 0 auto 1.5rem auto;
+    padding: 1.2rem 0;
+    background: rgba(86, 83, 57, 0.7);
+    color: rgb(255, 249, 195);
+    font-size: 2vw;
+    text-align: center;
+    letter-spacing: 0.05em;
+    border-radius: 0.5em;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 600px) {
+    .store-banner-info {
+        font-size: 4vw;
+        padding: 0.8rem 0;
+    }
+}
